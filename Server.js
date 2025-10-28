@@ -1,19 +1,24 @@
 const mongoose = require('mongoose');
 const express = require('express');
 const cors = require('cors');
+const dotenv = require('dotenv')
+
+dotenv.config();
+
 const app = express();
-app.listen(3456, () => {
-    console.log("Listening to port 3456");
+const PORT = process.env.PORT || 3456;
+app.listen(PORT, () => {
+    console.log(`Listening to port ${PORT}`);
 })
 app.use(cors());
 
-const connectToMDB = () => {
+const connectToMDB = async () => {
     try{
-        mongoose.connect("mongodb+srv://sai:honey@cluster0.r8k6sfp.mongodb.net/BRNDB?appName=Cluster0")
+        await mongoose.connect(process.env.MONGODB_URL);
         console.log("Successfully connected to MDB");
     }
     catch(err){
-        console.log("Not connected to MDB");
+        console.log("Not connected to MDB",err);
     }
 }
 
