@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv')
+const dotenv = require('dotenv');
+const jwt = require('jsonwebtoken')
 
 dotenv.config();
 
@@ -14,9 +15,23 @@ app.use(cors());
 app.use(express.json());
 
 const userSchema = new mongoose.Schema({
-    name : String,
-    email : String,
-    password : String
+    name : {
+        type : String,
+        required : true
+    },
+    email : {
+        type : String,
+        required : true
+    },
+    password : {
+        type : String,
+        required : true
+    },
+    role: {
+        type: String,
+        enum: ["admin", "vendor", "customer"],
+        required : true
+  }
 });
 
 const User = new mongoose.model("users",userSchema,"users");
@@ -25,9 +40,9 @@ app.post("/signup", async (req,res) => {
     try{
         console.log(req.body);
         const userData = req.body;
-        await User.insertMany(userData)
+        await User.insertMany(userData);
         console.log("Successfully signuped up");
-        res.json({status:"singup successful"});
+        res.json({status:"success", msg:"singup successful"});
     }
     catch(err){
         console.log("Not signedup",err)
@@ -42,7 +57,8 @@ app.post("/login", async (req,res) => {
         if(userArr.length > 0){
             if(req.body.password === userArr[0].password){
                 console.log("login successful")
-                res.json({status:"success", msg: "login successful"})
+                let token = jwt.sign({email : req.body.email, password : req.body.password, role : req.body.role}, "jwt_secret_key");
+                res.json({status:"success", msg: "login successful", token : token, data : userArr});
             }else{
                 console.log("password is incorrect");
                 res.json({status:"password is not correct"})
